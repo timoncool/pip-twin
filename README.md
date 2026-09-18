@@ -2,7 +2,7 @@
 
 # PiP Twin
 
-**Второе окно с тем же играющим видео для Chrome — свой «картинка в картинке» держишь на мониторе, близнеца выводишь во весь экран на телевизор.**
+**A second window with the same playing video for Chrome — keep your Picture-in-Picture on the monitor, send the twin fullscreen to the TV.**
 
 [![License](https://img.shields.io/github/license/timoncool/pip-twin?style=flat-square)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/timoncool/pip-twin?style=flat-square)](https://github.com/timoncool/pip-twin/stargazers)
@@ -10,68 +10,70 @@
 [![Issues](https://img.shields.io/github/issues/timoncool/pip-twin?style=flat-square)](https://github.com/timoncool/pip-twin/issues)
 [![Code size](https://img.shields.io/github/languages/code-size/timoncool/pip-twin?style=flat-square)](https://github.com/timoncool/pip-twin)
 
+**[English](README.md)** · **[Русский](README_RU.md)**
+
 </div>
 
-PiP Twin — расширение Chrome, которое открывает второе окно с тем же видео, что играет во вкладке. Chrome разрешает ровно одно окно «картинка в картинке» на весь браузер, поэтому близнец — обычное окно расширения без адресной строки. Оно получает уже декодированные кадры страничного `<video>` через `captureStream()`: тот же поток, то же время, полное разрешение, без перекодирования. Для тех, кто смотрит на рабочем мониторе и хочет продублировать картинку на телевизор за спиной.
+PiP Twin is a Chrome extension that opens a second window with the same video playing in the tab. Chrome allows only one Picture-in-Picture window per browser, so the twin is a plain extension window with no address bar. It receives the already-decoded frames of the page `<video>` through `captureStream()`: same stream, same time, full resolution, no re-encoding. Built for watching on the work monitor while mirroring the picture onto a TV behind you.
 
-## Возможности
+## Features
 
-- **Одно видео на два экрана** — мелкий PiP на мониторе двигаешь как обычно, близнеца разворачиваешь во весь экран на втором.
-- **Тот же поток** — `captureStream()` отдаёт декодированные кадры, поэтому картинка идёт синхронно, в полном разрешении, без второй загрузки.
-- **Окно без адресной строки** — service worker пересоздаёт всплывающее окно как окно расширения, у которого Chrome не рисует омнибокс.
-- **Запоминает место** — позиция, размер и полный экран сохраняются и восстанавливаются при следующем открытии.
-- **Управление с клавиатуры** — пауза, перемотка, звук и полный экран прямо из окна близнеца.
-- **Работает локально** — ни аккаунтов, ни загрузок наружу, весь код в папке расширения.
+- **One video on two screens** — drag the small PiP around the monitor as usual, blow the twin up fullscreen on the second display.
+- **Same stream** — `captureStream()` delivers decoded frames, so the picture stays in sync, at full resolution, with no second download.
+- **Window without an address bar** — the service worker re-creates the popup as an extension window, which Chrome renders without the omnibox.
+- **Remembers its place** — position, size and fullscreen state are saved and restored the next time you open it.
+- **Keyboard control** — pause, seek, mute and fullscreen straight from the twin window.
+- **Runs locally** — no accounts, nothing sent out, all code lives in the extension folder.
 
-## Установка
+## Install
 
-1. Открой `chrome://extensions`, включи **Режим разработчика** справа сверху.
-2. **Загрузить распакованное расширение** → выбери папку этого репозитория.
+1. Open `chrome://extensions`, enable **Developer mode** in the top right.
+2. **Load unpacked** → pick this repository folder.
 
-Расширение нигде не публикуется, работает из папки. Обновление — `git pull` и кнопка «Обновить» на карточке.
+The extension is not published anywhere; it runs from the folder. Update with `git pull` and the **Update** button on its card.
 
-## Использование
+## Usage
 
-На странице с играющим видео нажми иконку расширения или **`Alt+Shift+P`**. Ещё раз — близнец закрывается.
+On a page with a playing video, click the toolbar icon or press **`Alt+Shift+P`**. Click again to close the twin.
 
-| Клавиша | Действие |
+| Key | Action |
 | --- | --- |
-| `F`, двойной клик | полный экран |
-| `Esc` | выйти из полного экрана |
-| `Space`, `K` | пауза/плей оригинала |
-| `←` / `→` | перемотка на 5 с |
-| `J` / `L` | перемотка на 10 с |
-| `M` | звук оригинала вкл/выкл |
-| `Q` | закрыть близнеца |
+| `F`, double-click | toggle fullscreen |
+| `Esc` | leave fullscreen |
+| `Space`, `K` | play / pause the original |
+| `←` / `→` | seek 5 s |
+| `J` / `L` | seek 10 s |
+| `M` | mute / unmute the original |
+| `Q` | close the twin |
 
-## Как это работает
+## How it works
 
-- Клик по иконке инжектит `twin.js` во все фреймы вкладки. Скрипт находит самый большой играющий `<video>`, снимает с него `captureStream()` и открывает окно.
-- Окно создаёт страница, но фоновый service worker сразу пересоздаёт его как окно расширения (`chrome.windows.create`, `type: popup`) — у таких окон Chrome не рисует адресную строку.
-- Позиция и полный экран хранятся в `chrome.storage.local` и восстанавливаются при следующем открытии.
+- Clicking the icon injects `twin.js` into every frame of the tab. The script finds the largest playing `<video>`, captures it with `captureStream()` and opens a window.
+- The window is opened by the page, but the background service worker immediately re-parents it into an extension-owned popup window (`chrome.windows.create`, `type: popup`) — Chrome draws no address bar on those.
+- Position and fullscreen state are kept in `chrome.storage.local` and restored on the next open.
 
-**Ограничения.** DRM-потоки (Widevine) запрещают `captureStream()` — обычный YouTube работает, платные фильмы нет. Если сайт блокирует всплывающие окна, на иконке появится `!`: разреши всплывающие окна для сайта и нажми ещё раз.
+**Limits.** DRM streams (Widevine) refuse `captureStream()` — regular YouTube works, paid movies do not. If a site blocks pop-ups, the icon shows `!`: allow pop-ups for that site and click again.
 
-## Другие проекты [@timoncool](https://github.com/timoncool)
+## Other Projects by [@timoncool](https://github.com/timoncool)
 
-| Проект | Описание |
-|--------|----------|
-| [ScreenSavy.com](https://github.com/timoncool/ScreenSavy.com) | Генератор эмбиент-экранов для любого дисплея |
-| [VideoSOS](https://github.com/timoncool/videosos) | AI-видеопродакшн в браузере |
-| [GitLife](https://github.com/timoncool/gitlife) | Жизнь в неделях — интерактивный календарь |
-| [Bulka](https://github.com/timoncool/Bulka) | Платформа лайв-кодинга музыки |
-| [telegram-api-mcp](https://github.com/timoncool/telegram-api-mcp) | Telegram Bot API как MCP-сервер |
-| [ACE-Step Studio](https://github.com/timoncool/ACE-Step-Studio) | AI-студия музыки — песни, вокал, каверы, клипы |
+| Project | Description |
+|---------|-------------|
+| [ScreenSavy.com](https://github.com/timoncool/ScreenSavy.com) | Ambient screen generator for any display |
+| [VideoSOS](https://github.com/timoncool/videosos) | AI video production in the browser |
+| [GitLife](https://github.com/timoncool/gitlife) | Your life in weeks — interactive calendar |
+| [Bulka](https://github.com/timoncool/Bulka) | Live-coding music platform |
+| [telegram-api-mcp](https://github.com/timoncool/telegram-api-mcp) | Full Telegram Bot API as an MCP server |
+| [ACE-Step Studio](https://github.com/timoncool/ACE-Step-Studio) | AI music studio — songs, vocals, covers, videos |
 
-## Авторы
+## Authors
 
 - **Nerual Dreming** — [Telegram](https://t.me/nerual_dreming) | [neuro-cartel.com](https://neuro-cartel.com) | [ArtGeneration.me](https://artgeneration.me)
 
-## Поддержать автора
+## Support the Author
 
-Я создаю опенсорс софт и занимаюсь исследованиями в области ИИ. Большая часть всего, что я делаю, находится в открытом доступе. Ваши пожертвования позволяют мне создавать и исследовать больше, не отвлекаясь на поиск еды для продолжения существования =)
+I build open-source software and do AI research. Most of what I create is free and available to everyone. Your donations help me keep creating without worrying about where the next meal comes from =)
 
-**[Все способы поддержки](https://github.com/timoncool/ACE-Step-Studio/blob/master/DONATE.md)** | **[dalink.to/nerual_dreming](https://dalink.to/nerual_dreming)** | **[boosty.to/neuro_art](https://boosty.to/neuro_art)**
+**[All donation methods](https://github.com/timoncool/ACE-Step-Studio/blob/master/DONATE.md)** | **[dalink.to/nerual_dreming](https://dalink.to/nerual_dreming)** | **[boosty.to/neuro_art](https://boosty.to/neuro_art)**
 
 - **BTC:** `1E7dHL22RpyhJGVpcvKdbyZgksSYkYeEBC`
 - **ETH (ERC20):** `0xb5db65adf478983186d4897ba92fe2c25c594a0c`
@@ -87,6 +89,6 @@ PiP Twin — расширение Chrome, которое открывает вт
  </picture>
 </a>
 
-## Лицензия
+## License
 
-MIT. Функция `findLargestPlayingVideo()` заимствована из [GoogleChromeLabs/picture-in-picture-chrome-extension](https://github.com/GoogleChromeLabs/picture-in-picture-chrome-extension) (Apache-2.0).
+MIT. `findLargestPlayingVideo()` is derived from [GoogleChromeLabs/picture-in-picture-chrome-extension](https://github.com/GoogleChromeLabs/picture-in-picture-chrome-extension) (Apache-2.0).
