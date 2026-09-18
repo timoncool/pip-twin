@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "PiP Twin",
+  "version": "0.1.0",
+  "description": "Second window with the same video: keep your PiP on the main monitor, put the twin fullscreen on the TV.",
+  "icons": {
+    "16": "assets/icon16.png",
+    "48": "assets/icon48.png",
+    "128": "assets/icon128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_icon": {
+      "16": "assets/icon16.png",
+      "48": "assets/icon48.png"
+    },
+    "default_title": "PiP Twin: open/close the twin window (Alt+Shift+P)"
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "windows": "Alt+Shift+P",
+        "mac": "Alt+Shift+P",
+        "chromeos": "Alt+Shift+P",
+        "linux": "Alt+Shift+P"
+      }
+    }
+  },
+  "permissions": [
+    "scripting",
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ]
+}

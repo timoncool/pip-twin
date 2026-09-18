@@ -1,0 +1,5 @@
+.claude/
+tools/profile/
+tools/out/
+node_modules/
+*.zip
