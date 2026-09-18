@@ -60,12 +60,19 @@
     twinVideo.srcObject = state.stream;
     twinVideo.play().catch(() => {});
 
-    // A next-video switch reuses the element but ends the captured track and
-    // reloads the source; reattach immediately on either signal.
-    const track = state.stream.getVideoTracks()[0];
-    if (track) track.addEventListener('ended', () => reattachSoon(twinVideo), { once: true });
+    // A next-video switch reuses the element but reloads its source (it passes
+    // through readyState 0); reattach then. A plain end with nothing next keeps
+    // the element loaded, so we leave the last frame frozen instead of churning.
     state.onSourceEvent = () => reattachSoon(twinVideo);
-    for (const ev of ['loadeddata', 'playing', 'emptied', 'ended']) video.addEventListener(ev, state.onSourceEvent);
+    for (const ev of ['loadeddata', 'playing', 'emptied']) video.addEventListener(ev, state.onSourceEvent);
+  }
+
+  function needsReattach(best) {
+    if (!best) return false;
+    if (!document.contains(state.source)) return true; // element replaced
+    if (state.source.readyState === 0) return true;    // source reloading (next video)
+    if (best !== state.source) return true;            // a different video is playing
+    return false;
   }
 
   function reattachSoon(twinVideo) {
@@ -74,7 +81,7 @@
       state.reattachRaf = 0;
       if (!state.popup || state.popup.closed) return;
       const best = findLargestPlayingVideo();
-      if (best && best.readyState >= 2) attach(best, twinVideo);
+      if (needsReattach(best) && best.readyState >= 2) attach(best, twinVideo);
     }, 120);
   }
 
@@ -83,13 +90,8 @@
       const popup = state.popup;
       if (!popup || popup.closed) { closeTwin(); return; }
       const best = findLargestPlayingVideo();
-      if (!best) return;
-      const track = state.stream && state.stream.getVideoTracks()[0];
-      const stale = !state.stream || !state.stream.active ||
-        (track && track.readyState === 'ended') ||
-        !document.contains(state.source) || state.source.readyState === 0;
-      if (stale || best !== state.source) attach(best, twinVideo);
-      else if (twinVideo.paused) twinVideo.play().catch(() => {});
+      if (needsReattach(best) && best.readyState >= 2) attach(best, twinVideo);
+      else if (state.source && !state.source.ended && !state.source.paused && twinVideo.paused) twinVideo.play().catch(() => {});
     }, 500);
   }
 
