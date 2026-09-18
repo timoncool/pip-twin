@@ -12,6 +12,8 @@
 
 **[English](README.md)** · **[Русский](README_RU.md)**
 
+<img src="docs/screenshots/hero.png" width="520" alt="Top: the PiP Twin window with no address bar. Bottom: the same video in the tab." />
+
 </div>
 
 PiP Twin is a Chrome extension that opens a second window with the same video playing in the tab. Chrome allows only one Picture-in-Picture window per browser, so the twin is a plain extension window with no address bar. It receives the already-decoded frames of the page `<video>` through `captureStream()`: same stream, same time, full resolution, no re-encoding. Built for watching on the work monitor while mirroring the picture onto a TV behind you.
