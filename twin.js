@@ -33,6 +33,9 @@
   function closeTwin() {
     clearInterval(state.timer);
     state.timer = 0;
+    clearTimeout(state.reattachRaf);
+    state.reattachRaf = 0;
+    detachSourceEvents();
     stopStream();
     const popup = state.popup;
     state.popup = null;
@@ -41,12 +44,38 @@
     send({ type: 'closed' });
   }
 
+  function detachSourceEvents() {
+    const v = state.source;
+    if (v && state.onSourceEvent) {
+      for (const ev of ['loadeddata', 'playing', 'emptied', 'ended']) v.removeEventListener(ev, state.onSourceEvent);
+    }
+    state.onSourceEvent = null;
+  }
+
   function attach(video, twinVideo) {
+    detachSourceEvents();
     stopStream();
     state.source = video;
     state.stream = video.captureStream();
     twinVideo.srcObject = state.stream;
     twinVideo.play().catch(() => {});
+
+    // A next-video switch reuses the element but ends the captured track and
+    // reloads the source; reattach immediately on either signal.
+    const track = state.stream.getVideoTracks()[0];
+    if (track) track.addEventListener('ended', () => reattachSoon(twinVideo), { once: true });
+    state.onSourceEvent = () => reattachSoon(twinVideo);
+    for (const ev of ['loadeddata', 'playing', 'emptied', 'ended']) video.addEventListener(ev, state.onSourceEvent);
+  }
+
+  function reattachSoon(twinVideo) {
+    if (state.reattachRaf) return;
+    state.reattachRaf = setTimeout(() => {
+      state.reattachRaf = 0;
+      if (!state.popup || state.popup.closed) return;
+      const best = findLargestPlayingVideo();
+      if (best && best.readyState >= 2) attach(best, twinVideo);
+    }, 120);
   }
 
   function watch(twinVideo) {
@@ -55,9 +84,13 @@
       if (!popup || popup.closed) { closeTwin(); return; }
       const best = findLargestPlayingVideo();
       if (!best) return;
-      const stale = !state.stream || !state.stream.active || !document.contains(state.source);
+      const track = state.stream && state.stream.getVideoTracks()[0];
+      const stale = !state.stream || !state.stream.active ||
+        (track && track.readyState === 'ended') ||
+        !document.contains(state.source) || state.source.readyState === 0;
       if (stale || best !== state.source) attach(best, twinVideo);
-    }, 1000);
+      else if (twinVideo.paused) twinVideo.play().catch(() => {});
+    }, 500);
   }
 
   function seek(delta) {
