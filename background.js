@@ -21,17 +21,14 @@ chrome.tabs.onCreated.addListener(async (tab) => {
   const win = await chrome.windows.get(tab.windowId);
   if (win.type !== 'popup') return;
   pending.delete(tab.openerTabId);
-  twins.set(tab.openerTabId, tab.windowId);
-  await restoreBounds(tab.windowId);
-});
-
-async function restoreBounds(windowId) {
-  const { bounds } = await chrome.storage.local.get('bounds');
-  if (!bounds) return;
+  // Re-parent the page-opened popup tab into an extension-owned popup window:
+  // Chrome shows a read-only location bar on page-opened popups, not on extension ones.
+  const { bounds = {} } = await chrome.storage.local.get('bounds');
   const { left, top, width, height, fullscreen } = bounds;
-  await chrome.windows.update(windowId, { left, top, width, height, state: 'normal' });
-  if (fullscreen) await chrome.windows.update(windowId, { state: 'fullscreen' });
-}
+  const owned = await chrome.windows.create({ tabId: tab.id, type: 'popup', focused: false, left, top, width, height });
+  twins.set(tab.openerTabId, owned.id);
+  if (fullscreen) await chrome.windows.update(owned.id, { state: 'fullscreen' });
+});
 
 chrome.windows.onBoundsChanged.addListener(async (win) => {
   if (![...twins.values()].includes(win.id)) return;
