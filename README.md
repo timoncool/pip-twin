@@ -2,40 +2,37 @@
 
 # PiP Twin
 
-**Chrome-расширение: открывает второе окно с тем же играющим видео. Свой обычный «картинка в картинке» держишь на мониторе, близнеца тащишь на телевизор и разворачиваешь во весь экран.**
+**Второе окно с тем же играющим видео для Chrome — свой «картинка в картинке» держишь на мониторе, близнеца выводишь во весь экран на телевизор.**
 
-[![Install: Load unpacked](https://img.shields.io/badge/⬇_Установка-Load_unpacked-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](#установка)
-[![How it works](https://img.shields.io/badge/⚙_Как_работает-captureStream-ff0033?style=for-the-badge)](#как-это-работает)
-[![Donate](https://img.shields.io/badge/💖_Поддержать-Donate-ff69b4?style=for-the-badge)](https://boosty.to/nerual_dreming)
-
-[![Stars](https://img.shields.io/github/stars/timoncool/pip-twin?style=flat-square&logo=github)](https://github.com/timoncool/pip-twin/stargazers)
 [![License](https://img.shields.io/github/license/timoncool/pip-twin?style=flat-square)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/timoncool/pip-twin?style=flat-square)](https://github.com/timoncool/pip-twin/stargazers)
 [![Last Commit](https://img.shields.io/github/last-commit/timoncool/pip-twin?style=flat-square)](https://github.com/timoncool/pip-twin/commits/master)
 [![Issues](https://img.shields.io/github/issues/timoncool/pip-twin?style=flat-square)](https://github.com/timoncool/pip-twin/issues)
 [![Code size](https://img.shields.io/github/languages/code-size/timoncool/pip-twin?style=flat-square)](https://github.com/timoncool/pip-twin)
 
-[![Chrome](https://img.shields.io/badge/Chrome-Manifest_V3-4285F4?style=flat-square&logo=googlechrome&logoColor=white)](#установка)
-[![Edge](https://img.shields.io/badge/Edge-Chromium-0078D7?style=flat-square&logo=microsoftedge&logoColor=white)](#установка)
-[![No build](https://img.shields.io/badge/Сборка-не_нужна-3fb950?style=flat-square)](#установка)
-[![Vanilla JS](https://img.shields.io/badge/JavaScript-vanilla-F7DF1E?style=flat-square&logo=javascript&logoColor=black)](#)
-
 </div>
 
-Chrome разрешает ровно одно окно «картинка в картинке» на весь браузер, поэтому близнец — это обычное окно расширения без адресной строки. Оно получает уже декодированные кадры страничного `<video>` через `captureStream()`: тот же поток, то же время, полное разрешение, без перекодирования. Звук продолжает идти из оригинала, близнец немой.
+PiP Twin — расширение Chrome, которое открывает второе окно с тем же видео, что играет во вкладке. Chrome разрешает ровно одно окно «картинка в картинке» на весь браузер, поэтому близнец — обычное окно расширения без адресной строки. Оно получает уже декодированные кадры страничного `<video>` через `captureStream()`: тот же поток, то же время, полное разрешение, без перекодирования. Для тех, кто смотрит на рабочем мониторе и хочет продублировать картинку на телевизор за спиной.
+
+## Возможности
+
+- **Одно видео на два экрана** — мелкий PiP на мониторе двигаешь как обычно, близнеца разворачиваешь во весь экран на втором.
+- **Тот же поток** — `captureStream()` отдаёт декодированные кадры, поэтому картинка идёт синхронно, в полном разрешении, без второй загрузки.
+- **Окно без адресной строки** — service worker пересоздаёт всплывающее окно как окно расширения, у которого Chrome не рисует омнибокс.
+- **Запоминает место** — позиция, размер и полный экран сохраняются и восстанавливаются при следующем открытии.
+- **Управление с клавиатуры** — пауза, перемотка, звук и полный экран прямо из окна близнеца.
+- **Работает локально** — ни аккаунтов, ни загрузок наружу, весь код в папке расширения.
 
 ## Установка
 
 1. Открой `chrome://extensions`, включи **Режим разработчика** справа сверху.
-2. **Загрузить распакованное расширение** → выбери папку с этим репозиторием.
+2. **Загрузить распакованное расширение** → выбери папку этого репозитория.
 
-Расширение нигде не публикуется, работает локально из папки. Обновление — `git pull` и кнопка «Обновить» на карточке расширения.
+Расширение нигде не публикуется, работает из папки. Обновление — `git pull` и кнопка «Обновить» на карточке.
 
-## Как пользоваться
+## Использование
 
-- На странице с играющим видео нажми иконку расширения или **`Alt+Shift+P`**. Ещё раз — близнец закрывается.
-- Окно запоминает, где ты его оставил: позицию, размер и полный экран. В следующий раз откроется там же.
-
-Клавиши внутри окна близнеца:
+На странице с играющим видео нажми иконку расширения или **`Alt+Shift+P`**. Ещё раз — близнец закрывается.
 
 | Клавиша | Действие |
 | --- | --- |
@@ -51,12 +48,44 @@ Chrome разрешает ровно одно окно «картинка в к�
 
 - Клик по иконке инжектит `twin.js` во все фреймы вкладки. Скрипт находит самый большой играющий `<video>`, снимает с него `captureStream()` и открывает окно.
 - Окно создаёт страница, но фоновый service worker сразу пересоздаёт его как окно расширения (`chrome.windows.create`, `type: popup`) — у таких окон Chrome не рисует адресную строку.
-- Позиция и состояние полного экрана хранятся в `chrome.storage.local` и восстанавливаются при следующем открытии.
+- Позиция и полный экран хранятся в `chrome.storage.local` и восстанавливаются при следующем открытии.
 
-## Ограничения
+**Ограничения.** DRM-потоки (Widevine) запрещают `captureStream()` — обычный YouTube работает, платные фильмы нет. Если сайт блокирует всплывающие окна, на иконке появится `!`: разреши всплывающие окна для сайта и нажми ещё раз.
 
-- DRM-потоки (Widevine) запрещают `captureStream()`. Обычный YouTube работает, платные фильмы — нет.
-- Если сайт блокирует всплывающие окна, на иконке появится `!`: разреши всплывающие окна для этого сайта и нажми ещё раз.
+## Другие проекты [@timoncool](https://github.com/timoncool)
+
+| Проект | Описание |
+|--------|----------|
+| [ScreenSavy.com](https://github.com/timoncool/ScreenSavy.com) | Генератор эмбиент-экранов для любого дисплея |
+| [VideoSOS](https://github.com/timoncool/videosos) | AI-видеопродакшн в браузере |
+| [GitLife](https://github.com/timoncool/gitlife) | Жизнь в неделях — интерактивный календарь |
+| [Bulka](https://github.com/timoncool/Bulka) | Платформа лайв-кодинга музыки |
+| [telegram-api-mcp](https://github.com/timoncool/telegram-api-mcp) | Telegram Bot API как MCP-сервер |
+| [ACE-Step Studio](https://github.com/timoncool/ACE-Step-Studio) | AI-студия музыки — песни, вокал, каверы, клипы |
+
+## Авторы
+
+- **Nerual Dreming** — [Telegram](https://t.me/nerual_dreming) | [neuro-cartel.com](https://neuro-cartel.com) | [ArtGeneration.me](https://artgeneration.me)
+
+## Поддержать автора
+
+Я создаю опенсорс софт и занимаюсь исследованиями в области ИИ. Большая часть всего, что я делаю, находится в открытом доступе. Ваши пожертвования позволяют мне создавать и исследовать больше, не отвлекаясь на поиск еды для продолжения существования =)
+
+**[Все способы поддержки](https://github.com/timoncool/ACE-Step-Studio/blob/master/DONATE.md)** | **[dalink.to/nerual_dreming](https://dalink.to/nerual_dreming)** | **[boosty.to/neuro_art](https://boosty.to/neuro_art)**
+
+- **BTC:** `1E7dHL22RpyhJGVpcvKdbyZgksSYkYeEBC`
+- **ETH (ERC20):** `0xb5db65adf478983186d4897ba92fe2c25c594a0c`
+- **USDT (TRC20):** `TQST9Lp2TjK6FiVkn4fwfGUee7NmkxEE7C`
+
+## Star History
+
+<a href="https://github.com/timoncool/pip-twin/stargazers">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="docs/stars-dark.svg" />
+   <source media="(prefers-color-scheme: light)" srcset="docs/stars-light.svg" />
+   <img alt="Star History Chart" src="docs/stars-light.svg" />
+ </picture>
+</a>
 
 ## Лицензия
 
